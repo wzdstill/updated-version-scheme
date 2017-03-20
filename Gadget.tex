@@ -1,0 +1,55 @@
+\section{Gadget Matrices and Gadget-Based Matrix Operations}
+In this section, we will show that the matrix $\G$ defined above can be used to support "invariant-preserving" pseudo-commutative matrix multiplication operations. We can also generalize matrix $\G$ and its trapdoor to other integer powers or mixed-integer products. lastly, we propose a new arrangement of matrix operations for the generalized gadget matrices that is critical to our main result.
+\subsection{Matrix Operations with G via the Flattening Function $\G^{-1}$}
+Over general lattices, the only matrices that commute with $\G \in \Z^{n \times m}_{q}$ are scaled identity matrices $\alpha\mat{I}$, in the sense that $\G\cdot (\alpha\mat{I}_{m})=(\alpha\mat{I}_{n})\cdot \G$. Note that if the $\G$ is padded, then $\alpha\mat{I}_{m}$ could alternatively be the block matrix $\mat{A}$ containing $\alpha\mat{I}_{n}$ in the appropriate with zeroes everywhere else.\
+
+The works of Xagawa\cite{PKC:Xagawa13} and Alperin-Sheriff and Peikert\cite{C:AlpPei14}, among others, describe a technique that resolves this non-commutatively problem for $\G$. In particular, there is an efficiently computable function $\G^{-1}$, so that for any matrix $\mat{B} \in \Z^{n \times m}_{q}$£¬so that $\G^{-1}(\mat{B})=\mat{X} \in \{-1,1\}^{m \times m}$ and $\mat{GX}=\mat{B}$. This allows for "pseudo-commutative" multiplication of the gadget matrix $\G$ by any square matrix $\mat{M}$ of dimension $n$, by observing that
+\begin{equation}
+\G\cdot (\G^{-1}(\mat{MG}))=\mat{M\cdot G}
+\end{equation}
+The matrix $\mat{X}=\G^{-1}(\mat{B})$ has small norm independent of $\mat{B}$.
+\subsection{Non-Binary Gadgets $\G_{n,r,m}$ and Function $\G^{-1}_{n^{'},r^{'},m^{'}}(.)$}
+The matrix $\G$ and its trapdoor can be extended to other integer powers or mixed-integer products by the results of \cite{EC:MicPei12}. Then, we can give a generalized notation for gadget matrices as follows:\
+
+For any modulus $q\geq 2$, for integer $2\leq r\leq q$, let $\mat{g}^{T}_{r}=[1,r,r^{2},...,r^{k_{r}-1}] \in \Z^{1 \times k_{r}}_{q}$ for $k_{r}=\lceil \log_{r}q \rceil$. We let $\G_{n,r}=\mat{g}^{T}_{r}\otimes \mat{I}_{n} \in \Z^{n \times nk_{r}}_{q}$. The public trapdoor basis can be given analogously. Similar to the above padding argument, $\G_{n,r} \in \Z^{n \times nk_{r}}_{q}$ can be padded into a matrix $\G_{n,r,m} \in \Z^{n \times m}_{q}$ for $m\geq nk_{r}$ without increasing the norm of $\widetilde{\mat{T}_{\G_{n,r,m}}}$ from that of $\widetilde{\mat{T}_{\G_{n,r}}}$.\
+
+In this paper, we do not need to use $\widetilde{\mat{T}_{\G_{n,r,m}}}$ or $\widetilde{\mat{T}_{\G_{n,r}}}$ at all, but keep the discussion for exposition. Under this notation, the matrix $\G$ in dimension $n$ is either $\G_{n,2} \in \Z^{n \times n\log_{2}q}_{q}$ or its padded version $\G_{n,2,m} \in \Z^{n \times m}_{q}$ depending on the setting.\
+
+We now introduce a related function - the Batch Change-of-Base function $\G^{-1}_{n^{'},r^{'},m^{'}}(.)$ - as follows:\
+
+For any modulus $q \geq 2$, and any integer base $2 \leq r^{'} \leq q$, let integer $k_{r^{'}}=\lceil \log_{r^{'}}q \rceil$. For any integer $N^{'} \geq 2$ and $m^{'} \geq n^{'}k_{r^{'}}$ the function $\G^{-1}_{n^{'},r^{'},m^{'}}(.)$ takes as input a matrix from $\Z^{n^{'} \times m^{'}}_{q}$, first computes a matrix in $\{0,1,...,r^{'}-1\}^{n^{'}\log_{r^{'}}q \times m^{'}}$ using the $\G^{-1}$, then pads with rows of zeroes needed to form a matrix in $\{0,1,...,r^{'}-1\}^{m^{'} \times m^{'}}$. For example, the typical base-2 $\G^{-1}=\G^{-1}_{n,2,m}$ takes $\Z^{n \times m}_{q}$ to $\{0,1\}^{m \times m}$ as expected.
+\subsection{Further Gadget-Based Matrix Multiplication Operations}
+In this part, we propose a new arrangement of matrix operations(pseudo-commutative and non-commutative) that is critical to our main construction in this paper. First, fix any integer $n$, for some sufficiently small $\ell=\omega(1)\ll \log_{2}q \approx \log_{2}n$, define $\ell^{'}=2^{\ell}$ such that $\ell^{'}= \omega(1)< \log_{2}q \approx \log_{2}n$. Finally, fix any integer $m\geq n \ell k_{\ell^{'}}$.\
+
+Then for any two matrices $\mat{H} \in \Z^{n \times n \ell}_{q}, \mat{X} \in \Z^{\ell n \times n}_{q}$, consider the following terms, in order:
+\begin{enumerate}
+\item First, consider the base-2, dimension-n "gadget-encoding" of $\mat{X} \in \Z^{\ell n \times n}_{q}$, i.e. the matrix
+\begin{equation}
+\textbf{X} \cdot \G_{n,2,m} \in \Z^{\ell n \times m}_{q}=\Z^{n\log_{2}(\ell ^{'}) \times m}.
+\end{equation}
+\item Next, consider the base-$\ell^{'}$, dimension-$(n\ell)$ flatting(with zero-row padding) of the above:
+\begin{equation}
+\G^{-1}_{n\ell,\ell^{'},m}(\mat{X} \cdot \G_{n,2,m}) \in \{0,1,...,\ell^{'}-1\}^{m \times m} \subsetneq \Z^{m \times m}_{q}.
+\end{equation}
+\item Then, consider the base-$\ell^{'}$, dimension-$(n\ell)$ gadget-encoding of $\mat{H} \in \Z^{n \times n\ell}_{q}$, i.e. the matrix
+\begin{equation}
+\mat{H} \cdot \G_{n\ell,\ell^{'},m} \in \Z^{n \times m}_{q}.
+\end{equation}
+\item Finally -- for sufficient large $m$, we find the following relationship holds:
+\begin{equation}
+(\mat{H} \cdot \G_{n\ell,\ell^{'},m}) \cdot (\G^{-1}_{n\ell,\ell^{'},m}(\mat{X}\cdot \G_{n,2,m}))=(\mat{H \cdot X})\cdot \G_{n,2,m} \in \Z^{n \times m}_{q}
+\end{equation}
+\end{enumerate}
+with $\| \G^{-1}_{n\ell,\ell^{'},m}(\mat{X}\cdot \G_{n,2,m}) \|= \textbf{small}$, conditioned on the sufficiently small choice of $\ell=\omega(1)$. We emphasize that only public information, $n,m,\ell$, is required to perform this batch base-change-then-multiply operation, when given as input any $\mat{M} \in \Z^{n \times m}_{q}$(equal to $\mat{H}\cdot \G_{n\ell,\ell^{'},m} \in \Z^{n \times m}_{q}$) and any $\mat{X} \in \Z^{\ell n \times n}_{q}$.
+\begin{definition}
+We refer to the matrix $\mat{H}\cdot \G_{n\ell,\ell^{'},m} \in \Z^{n \times m}_{q}$ as the predicate-encoding of $\mat{H} \in \Z^{n \times n\ell}_{q}$, and to the matrix $\G^{-1}_{n\ell,\ell^{'},m}(\mat{X}\cdot \G_{n,2,m}) \in \{0,1,...,\ell^{'}-1\}^{m \times m} \subsetneq \Z^{m \times m}_{q}$ as the input-encoding of $\mat{X} \in \Z^{\ell n \times n}_{q}$.
+\end{definition}
+
+
+
+
+
+
+
+
+

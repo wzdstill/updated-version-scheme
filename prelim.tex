@@ -1,0 +1,143 @@
+\section{Preliminaries}
+\paragraph{Notation.} Let $\secparam$ be the security parameter, and let $\ppt$ denote probabilistic polynomial time. We use bold uppercase letters to denote matrices ${\bf M}$, and bold lowercase letters to denote vectors $\vec{v}$. We write $\widetilde{\mat M}$ to denote the Gram-Schmidt orthogonalization of $\mat M.$ We write $[n]$ to denote the set $\{1,...,n\}$, and $|\vec{t}|$ to denote the number of bits in the string $\vec{t}$. We denote the $i$-th bit $\vec{s}$ by $\vec{s}[i]$. We say a function $\negl(\cdot): \N \rightarrow (0,1)$ is negligible, if for every constant $c \in \N$, $\negl(n) < n^{-c}$ for sufficiently large $n$.
+
+\subsection{Inner Product Encryption}
+We recall the syntax and security definition of \emph{inner product encryption} (IPE) ~\cite{EC:KatSahWat08}. IPE can be regarded as a generalization of predicate encryption. An IPE scheme $\Pi$ consists of the 4-tuple $(\setup, \keygen, \enc,
+\\
+\dec)$ algorithms with details as follows:
+\begin{description}
+ \item $\setup(1^\secparam)$: On input the security parameter $\secparam$, the setup algorithm outputs public parameters $\pp$ and master secret key $\msk$.
+ \item $\keygen(\msk, \vec{v})$: On input the master secret key $\msk$ and a predicate vector $\vec{v}$, the key generation algorithm outputs a secret key $\sk_{\vec{v}}$ for vector $\vec{v}$.
+ \item $\enc(\pp, \vec{w}, \mu)$: On input the public parameter $\pp$ and an attribute/message pair $(\vec{w}, \mu)$, it outputs a ciphertext $\ct_{\vec{w}}$.
+ \item $\dec(\sk_{\vec{v}}, c_{\vec{w}})$: On input the secret key $\sk_{\vec{v}}$ and a ciphertext $c_{\vec{w}}$, it outputs the corresponding plaintext $\mu$ if $\langle \vec{v}, \vec{w} \rangle = 0$; otherwise, it outputs $\bot$.
+\end{description}
+
+\paragraph{Correctness.} We say the IPE scheme described above is correct, if for any $(\msk, \pp) \leftarrow \setup(1^\secparam)$, any message $\mu$, predicate vector $\vec{v}$, and any attribute vector $\vec{w}$ such that $\langle \vec{v}, \vec{w}\rangle = 0$, we have $\dec(\sk_{\vec{v}}, \ct_{\vec{w}}) = \mu$, where $\sk_{\vec{w}} \leftarrow \keygen(\msk, \vec{v})$ and $\ct_{\vec{v}} \leftarrow \enc(\pp, \vec{w}, \mu)$.
+
+\paragraph{Security.}For the security definition of IPE, we use the following experiment to describe it. Formally, for any $\ppt$ adversary $\A$, we consider the experiment $\Expt_{\A}^{\mathsf{IPE}}(1^\secparam)$:
+\begin{itemize}
+ \item \textbf{Setup}: An adversary $\A$ outputs two attribute vectors $\vec{w}_{0}, \vec{w}_{1}$,  A challenger runs the $\setup(1^\secparam)$ algorithm, and sends the master public key $\pp$ to the adversary.
+ \item \textbf{Query Phase I}: Proceeding adaptively, the adversary $\A$ queries a sequence of predicate vectors $(\vec{v}_1,..., \vec{v}_m)$ subject to the restriction that $\langle \vec{v}_i, \vec{w}_{0} \rangle \neq 0$ and $\langle \vec{v}_i, \vec{w}_{1} \rangle \neq 0$. On the $i$-th query, the challenger runs $\keygen(\msk, \vec{v}_i),$ and sends the result $\sk_{\vec{v}_i}$ to $\A$.
+ \item \textbf{Challenge}: Once adversary $\A$ decides that Query Phase I is over, it outputs  two length-equal messages $(\mu^*_0, \mu^*_1)$ and send them to challenger.  In response, the challenger selects random $b \in \bool$, and sends the ciphertext $\enc(\pp, \vec{w}_{b}, \mu^*_b)$ to \A.
+ \item \textbf{Query Phase II}: Adversary $\A$ continues to issue identity queries $(\vec{v}_{m + 1},..., \vec{v}_{n})$ adaptively, under the restriction that $\langle \vec{v}_i, \vec{w}_{0} \rangle \neq 0$ and $\langle \vec{v}_i, \vec{w}_{1} \rangle \neq 0$. The challenger responds by issuing keys $\sk_{\vec{v}_i}$ as in Query Phase I.
+ \item \textbf{Guess}: Adversary $\A$ outputs a guess $b' \in \bool$.
+\end{itemize}
+We define the advantage of adversary $\A$ in attacking an IPE scheme $\Pi$ as
+$$\advantage_{\A}(1^\secparam) = \left|\Pr[b = b'] - \frac{1}{2}\right|,$$
+\noindent where the probability is over the randomness of the challenger and adversary.
+
+\begin{definition}\label{defn:sec}
+We say an IPE scheme $\Pi$ is weakly attribute hiding against chosen-plaintext attacks in selective attribute setting, if for all $\ppt$ adversaries $\A$, we have
+$$\advantage_{\A}(1^\secparam) \leq \negl(\secparam).$$
+\end{definition}
+
+
+\subsection{Lattice Background}
+A full-rank $m$-dimensional integer lattice $\Lambda\subset\Z^m$ is a discrete additive subgroup whose linear span is $\R^m$. The basis of $\Lambda$ is a linearly independent set of vectors whose linear combinations are exactly $\Lambda$. Every integer lattice is generated as the $\Z$-linear combination of linearly independent vectors $\mat{B}=\{\vec{b}_1,...,\vec{b}_m\}\subset\Z^m$. For a matrix $\mat{A}\in\Z^{n\times m}_q$, we define the ``$q$-ary'' integer lattices:
+$$\Lambda_q^{\bot}=\{\vec{e} \in \Z^m| \mat{A} \vec{e} = \vec{0} \bmod q\},\qquad  \Lambda_q^{\mat{u}}=\{\vec{e}\in\Z^m|\mat{A}\vec{e} = \vec{u} \bmod q\}$$
+It is obvious that $\Lambda_q^{\vec{u}}$ is a coset of $\Lambda_q^{\bot}$.
+
+Let $\Lambda$ be a discrete subset of $\Z^m$. For any vector $\vec{c}\in\R^m$, and any positive parameter $\sigma\in\R$, let $\rho_{\sigma, \vec{c}}(\vec{x})=\exp(-\pi||\vec{x}-\vec{c}||^2 / \sigma^2)$ be the Gaussian function on $\R^m$ with center $\vec{c}$ and parameter $\sigma$. Next, we let $\rho_{\sigma, \vec{c}}(\Lambda)=\sum_{\vec{x}\in\Lambda}\rho_{\sigma, \vec{c}}(\vec{x})$ be the discrete integral of $\rho_{\sigma, \vec{x}}$ over $\Lambda,$ and let $\D_{\Lambda, \sigma, \vec{c}}(\vec{y}):=\frac{\rho_{\sigma, \vec{c}}(\vec{y})}{\rho_{\sigma, \vec{c}}(\Lambda)}$. We abbreviate this as $\D_{\Lambda, \sigma}$ when $\vec{c}=\vec{0}.$
+
+Let $S^m$ denote the set of vectors in $\R^{m + 1}$ whose length is 1. Then the norm of a matrix $\mat{R} \in \R^{m \times m}$ is defined to be $\mathsf{sup}_{\vec{x} \in S^m} ||\mat{R} \vec{x}||$. Then we have the following lemma, which bounds the norm for some specified distributions.
+
+\begin{lemma}[\cite{{EC:AgrBonBoy10}}]\label{lem:bound}
+Regarding the norm defined above, we have the following bounds:
+\begin{itemize}
+ \item Let $\mat{R} \in \{-1, 1\}^{m \times m}$ be chosen at random, then we have $\prob[||\mat{R}|| > 12 \sqrt{2m}] < e^{-2m}$.
+ \item Let $\mat{R}$ be sampled from $\D_{\Z^{m \times m}, \sigma}$, then we have $\prob [||\mat{R}|| > \sigma \sqrt{m}] < e^{-2m}$.
+\end{itemize}
+\end{lemma}
+
+\subsection{Randomness Extraction}
+
+We will use the following lemma to argue the indistinghishability of two different distributions, which is a generalization of the leftover hash lemma proposed by Dodis et al. \cite{EC:DodReySmi04}.
+
+\begin{lemma}[\cite{EC:AgrBonBoy10}] \label{lem:lhl}
+Suppose that $m > (n + 1) \log q + \omega(\log n)$. Let $\mat{R} \in \{-1, 1\}^{m \times k}$ be chosen uniformly at random for some polynomial $k = k(n)$. Let $\mat{A}, \mat{B}$ be matrix chosen randomly from $\Z^{n \times m}_q, \Z^{n \times k}_q$ respectively. Then, for all vectors $\vec{w} \in \Z^m$, the two following distributions are statistically close:
+$$(\mat{A}, \mat{A} \mat{R}, \mat{R}^T \vec{w}) \approx (\mat{A}, \mat{B}, \mat{R}^T \vec{w})$$
+\end{lemma}
+
+\subsection{Learning With Errors}
+
+The LWE problem was introduced by Regev \cite{STOC:Regev05}, who showed that solving it \emph{on average} is
+as hard as (quantumly) solving several standard lattice problems \emph{in the worst case}.
+\begin{definition}[LWE]\label{defn:lwe}
+For an integer $q = q(n) \geq 2$, and an error distribution $\chi = \chi(n)$ over $\Z_q$, the \emph{Learning With Errors problem $\LWE_{n, m, q, \chi}$} is to distinguish between the following pairs of distributions (e.g. as given by a sampling oracle $\mathcal{O}\in\{\mathcal{O}_{\vec{s}}, \mathcal{O}_{\$}\}$):
+$$\{\mat{A}, \mat{A}^{T}\vec{s} + \vec{x}\} \  \text{and} \ \{\mat{A}, \vec{u}\}$$
+where $\mat{A} \overset{\$}{\leftarrow}\Z^{n \times m}_q$, $\vec{s} \overset{\$}{\leftarrow} \Z^n_q$, $\vec{u} \overset{\$}{\leftarrow} \Z^m_q$, and $\vec{x} \overset{\$}{\leftarrow} \chi^n$.
+\end{definition}
+\leo{the dimension in LWE definition is not correct. Also add a theorem about the hardness of LWE}
+\begin{theorem}[\cite{STOC:Regev05,STOC:Peikert09,C:MicMol11,EC:MicPei12}]
+Let $q=q(n) \in \N$ be either a prime power or a product of small (size $poly(n)$) distinct primes, and let $B \geq \omega(\log n)\cdot \sqrt{n}$. Then there exists an efficient sampleable $B$-bounded distribution $\chi$ such that if there is an efficient algorithm that solves the average-case $\LWE$ problem for parameters $n, q, \chi$, then:
+\begin{itemize}
+ \item There is an efficient quantum algorithm that solves $\Gapsvp_{\tilde{O}(nq/B)}$ on any $n$-dimensional lattice.
+ \item If $q\geq \tilde{O}(2^{n/2})$, then there is an efficient classical algorithm for $\Gapsvp_{\tilde{O}(nq/B)}$ on any $n$-dimensional lattice.
+\end{itemize}
+In both cases, if one also considers distinguishers with sub-polynomial advantage, then we require $B\geq \tilde{O}(n)$ and the resulting approximation factor is slightly lager than $\tilde{O}(n^{1.5}q/B)$.
+\end{theorem}
+\begin{theorem}[\cite{STOC:BLPRS13}]
+Solving $n$-dimensional $\LWE$ with $poly(n)$ modulus implies an equally efficient solution to a worst-case lattice problem (e.g., $\Gapsvp$) in dimension $\sqrt{n}$.
+\end{theorem}
+
+\subsection{Two-Sided Trapdoors and Sampling Algorithms}
+
+We will use the following algorithms to sample short vectors from specified lattices.
+
+\begin{lemma}[\cite{STOC:GenPeiVai08,Alwen2010}] \label{lem:trapgen}
+Let $q, n, m$ be positive integers with $q\geq 2$ and sufficiently large $m = \Omega(n \log q)$. There exists a $\ppt$ algorithm $\trapgen(q, n, m)$ that with overwhelming probability outputs a pair $(\mat{A}\in\Z_q^{n\times m}, \mat{T}_\mat{A} \in\Z^{m\times m})$ such that $\mat{A}$ is statistically close to uniform in $\Z_q^{n\times m}$ and $\mat{T}_\mat{A}$ is a basis for $\Lambda_q^{\bot}(\mat{A})$ satisfying
+$$||\mat{T}_\mat{A}||\leq O(n\log q)\quad\mbox{and}\quad||\widetilde{\mat{T}_{\mat{A}}}||\leq O(\sqrt{n\log q})$$
+except with $\mathsf{negl}(n)$ probability.
+\end{lemma}
+
+\begin{lemma}[\cite{STOC:GenPeiVai08,EC:CHKP10,EC:AgrBonBoy10}] \label{lem:samp}
+Let $q>2, m>n.$ There are five algorithms as follows:
+\begin{itemize}
+ \item There is a $\ppt$  algorithm $\samplepre(\mat{A}, \mat{T}_{\mat{A}}, \vec{u}, \sigma)$: It takes as input
+\begin{itemize}
+\item a rank-$n$ matrix $\mat{A}\in\Z_q^{n\times m},$ and a vector $\vec{u}\in\Z_q^n,$
+\item a ``short'' basis $\mat{T}_{\mat{A}}$ for lattice $\Lambda_q^{\bot}(\mat{A}),$ and a Gaussian parameter $\sigma > ||\widetilde{\mat{T}_{\mat{A}}}||\cdot\omega(\sqrt{\log m}),$
+\end{itemize}
+then outputs a vector $\vec{x} \in \Lambda^{\perp}_{q}(\mat{A})$ distributed statistically close to $\mathcal{D}_{\Lambda^{\vec{u}}_{q}(\mat{A}),\sigma}$, whenever $\Lambda^{\vec{u}}_{q}(\mat{A})$ is not empty.
+
+
+
+ \item There is a deterministic polynomial algorithm $\extb(\mat{S}, \mat{A}^{'}=\mat{A}\| \bar{\mat{A}})$ : It takes as input
+\begin{itemize}
+\item an arbitrary $\mat{A} \in \Z^{n \times m}_{q}$ whose columns generate the entire group $\Z^{n}_{q}$, and an arbitrary $\bar{\mat{A}} \in \Z^{n \times \bar{m}}_{q}$,
+\item an arbitrary basis $\mat{S} \in \Z^{m \times m}$ of $\Lambda^{\bot}(\mat{A})$,
+\end{itemize}
+then outputs a basis $\mat{S}^{'}$ of $\Lambda^{\bot}(\mat{A}^{'}) \subseteq \Z^{m+\bar{m}}$ such that $\|\tilde{\mat{S}^{'}}\|=\|\tilde{\mat{S}}\|$. Moreover, the same holds even for any given permutation of the columns of $\mat{A}^{'}$(e.g., if columns of $\bar{\mat{A}}$ are both appended and prepended to $\mat{A}$).
+
+
+ \item There is a $\ppt$ algorithm $\randb(\mat{S}, s)$ :It takes as input
+\begin{itemize}
+\item a basis $\mat{S}$ of an $m$-dimensional integer lattice $\Lambda$,
+\item a parameter $s\geq \| \tilde{\mat{S}} \| \cdot \omega(\sqrt{\log n})$,
+\end{itemize}
+With overwhelming probability, it outputs a basis $\mat{S}^{'}$ of $\Lambda$, which is (essentially) statistically independent of the original basis, and $\| \mat{S}^{'} \|\leq s\sqrt{m}$.
+
+
+
+
+
+ \item There is a $\ppt$ algorithm $\sampleleft(\mat{A}, \mat{B}, \mat{T}_{\mat{A}}, \vec{u}, s)$: It takes as input
+\begin{itemize}
+\item a rank-$n$ matrix $\mat{A}\in\Z_q^{n\times m},$ and any matrix $\mat{B}\in\Z_q^{n\times m_1},$
+\item a ``short'' basis $\mat{T}_{\mat{A}}$ for lattice $\Lambda_q^{\bot}(\mat{A}),$ a vector $\vec{u}\in\Z_q^n,$
+\item and a Gaussian parameter $s > ||\widetilde{\mat{T}_{\mat{A}}}||\cdot\omega(\sqrt{\log(m+m_1)}),$
+\end{itemize}
+then outputs a vector $\vec r\in\Z^{m+m_1}$ distributed statistically close to $\D_{\Lambda_q^{\vec{u}}(\mat{F}), s}$ where $\mat{F}:=(\mat{A}|\mat{B}).$
+
+ \item There is a $\ppt$ algorithm $\sampleright(\mat{A}, \mat{B}, \mat{R}, \mat{T}_{\mat{B}}, \vec{u}, s)$: It takes as input
+\begin{itemize}
+\item any matrix $\mat{A}\in\Z_q^{n \times m},$ and a rank-$n$ matrix $\mat{B}\in\Z_q^{n\times m},$
+\item a matrix $\mat{R}\in\Z_q^{m \times m},$ where $s_{\mat R} := ||\mat{R}|| = \sup_{\vec{x} : ||\vec{x}||=1}||\mat{R}\vec{x}||,$
+\item a ``short'' basis $\mat{T}_{\mat{B}}$ for lattice $\Lambda_q^{\bot}(\mat{B}),$ a vector $\vec{u}\in\Z_q^n,$
+\item and a Gaussian parameter $s > ||\widetilde{\mat{T}_{\mat{B}}}||\cdot{s_{\mat R}}\cdot\omega(\sqrt{\log{m}}),$
+\end{itemize}
+then outputs a vector $\vec{r}\in\Z^{2m}$ distributed statistically close to $\D_{\Lambda_q^{\vec{u}}(\mat{F}), s}$ where $\mat{F}:=(\mat{A}|\mat{A}\mat{R} + \mat{B}).$
+
+
+\end{itemize}
+\end{lemma} 

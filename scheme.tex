@@ -1,0 +1,262 @@
+\section{Our Main Construction}
+We describe our IPE scheme that each secret key will be associated with a predicate vector $\vec{v} \in \Z^{\ell}_{q}$(for some fixed $\ell\geq 2$) and each ciphertext will be associated with an attribute vector $\vec{w} \in \Z^{\ell}_{q}$. Decryption may succeed if and only if $\langle \vec{v},\vec{w} \rangle=0 (mod\ q)$.
+\subsection{Construction}
+\leo{do another pass over the format of scheme. use $\cdot$ as multiplication notation and $\ell$ to as letter $l$. I haven't read the correctness and security proof yet.}
+Let $\lambda \in \Z^{+}$ be the security parameter and $\ell$ be the length of predicate and attribute vectors. Let $q$ and $m$ be positive integers. Let $\sigma$ and $\alpha$ be positive real Gaussian parameters. Define $k=\lfloor \log_{2}q\rfloor$. \\[0.6cm]
+$\setup$$(1^{\lambda},1^{\ell})$: On input a security parameter $\lambda$ and a parameter $\ell$ denoting the length of predicate and
+
+~~~~~attribute vectors, do:
+\begin{enumerate}
+\item Use the algorithm \trapgen ($1^{\lambda},q,n,m$) to generate a random matrix $\textbf{A} \in \Z^{n \times m}_{q}$ together with a trapdoor $\mat{T}_\mat{A}$.\
+
+\item Choose a random matrix $\mat{B} \in \Z^{n \times m}_{q}$.\
+
+\item Choose a random vector $\vec{u} \in \Z^{n}_{q}$.
+\end{enumerate}
+~~Output $\pp=(\mat{A}, \mat{B}, \vec{u}),\msk=\mat{T}_\mat{A}$.\\[0.4cm]
+$\keygen$$(\pp,\msk,\vec{v})$: On input the public parameters $\pp$, the master secret key $\msk$, and a predicate vector
+
+~~~~~$\vec{v}=(v_{1},...,v_{\ell}) \in \Z^{\ell}_{q}$, do:
+\begin{enumerate}
+\item Define the input-encoding matrices
+\begin{equation}
+\mat{V}^{'}= \begin{bmatrix}
+v_{1} \textbf{I}_{n}\\
+v_{2} \textbf{I}_{n}\\
+\vdots\\
+v_{\ell} \textbf{I}_{n}
+\end{bmatrix} \in \Z^{\ell n \times n}_{q},~~~ \mat{V}=\G^{-1}_{n\ell,\ell^{'},m}(\mat{V}^{'}\cdot \G_{n,2,m}) \in [\ell^{'}]^{m \times m}.
+\end{equation}
+
+\item Define the  matrix $\mat{U}=\mat{BV} \in \Z^{n \times m}_{q}$, $\mat{A}_{\vec{v}}=[\mat{A}|\mat{U}]$.\
+
+\item Using the master secret key $\msk=(\mat{T}_\mat{A},\sigma)$, compute $\vec{r}\leftarrow$ $\sampleleft$ ($\textbf{A}, \mat{T}_\mat{A},\mat{U}, \vec{u},\sigma$). Then $\vec{r}$ is a vector in $\Z^{2m}$ satisfying $\mat{A}_{\vec{v}}\cdot \vec{r}=\vec{u}$ (mod $q$).
+\end{enumerate}
+~~Output the secret key  $\sk_{\vec{v}}=\vec{r}$.\\[0.4cm]
+$\enc$$(\pp,\vec{w},m)$: On input public parameters $\pp$, an attribute vectors $\vec{w}$, and a message $m \in \{0,1\}$, do:
+\begin{enumerate}
+\item Choose a uniformly random $\vec{s}\xleftarrow{\$} \Z^{n}_{q}$.\
+
+\item Choose a noise vector $\vec{e}_{0}\leftarrow D_{\Z^{m}_{q},\alpha}$ and a noise term $e\leftarrow D_{\Z_{q},\alpha}$.\
+
+\item Compute $\vec{c}_{0}=\vec{s}^{T}\mat{A}+\vec{e}^{T}_{0}$.
+
+\item Define the matrix
+\begin{equation}
+\mat{W}^{'}= \begin{bmatrix}
+w_{1} \mat{I}_{n}&w_{2} \mat{I}_{n}&\ldots&w_{\ell} \mat{I}_{n}
+\end{bmatrix} \in \Z^{n \times \ell n}_{q},~~~ \mat{W}=\mat{W}^{'}\cdot \G_{n\ell,\ell^{'},m} \in \Z^{n \times m}_{q}.
+\end{equation}
+Pick a random matrix $\mat{R}\xleftarrow{\$} \{-1,1\}^{m \times m}$, define error vector $\vec{e}^{T}_{1}=\vec{e}^{T}_{0}\mat{R}$. Set
+\begin{equation}
+\vec{c}_{1}=\vec{s}^{T}(\mat{B}+\mat{W})+\vec{e}^{T}_{1},~~~c_{2}=\vec{s}^{T}\vec{u}+e+\lfloor \frac{q}{2} \rfloor m.
+\end{equation}
+\end{enumerate}
+~~Output ciphertext  $\ct=(\vec{c}_{0},\vec{c}_{1},c_{2})$.\\[0.4cm]
+$\dec$$(\pp,\sk_{\vec{v}},\ct,\vec{v})$: On input public parameters $\pp$ ,a secret key $\sk_{\vec{v}}$ for predicate vector $\vec{v}$, and a ciphertext
+
+~~$\ct$, do:
+\begin{enumerate}
+\item Compute the vector $\vec{c}_{v}=\vec{c}_{1}\cdot \mat{V}$.\
+
+\item Let $\vec{c}=[\vec{c}_{0}|\vec{c}_{v}]$.\
+
+\item Compute $ z\leftarrow c_{2}-\vec{c}\vec{r}$(mod $q$).
+\end{enumerate}
+~~Output $0$ if $|z|<q/4$ and $1$ otherwise.\\[0.2cm]
+
+
+\subsection{Correctness}
+We prove correctness of our scheme as follow.
+\begin{lemma}
+For certain parameter choices, our scheme is correct.
+\end{lemma}
+\noindent $\mat{Proof}$. Recall that the ciphertext $\ct=(\vec{c}_{0},\vec{c}_{1},c_{2})$. For which $\vec{c}_{0}=\vec{s}^{T}\mat{A}+\vec{e}^{T}_{0},  \vec{c}_{1}=\vec{s}^{T}(\mat{B}+\mat{W})+\vec{e}^{T}_{1}, c_{2}=\vec{s}^{T}\vec{u}+e+\lfloor \frac{q}{2} \rfloor m$, so
+\begin{equation}
+\vec{c}_{v}=\vec{c}_{1}\cdot \mat{V}=\vec{s}^{T}(\mat{B}+\mat{W})\cdot \mat{V}+\vec{e}^{T}_{1}\cdot \mat{V}=\vec{s}^{T}\cdot \mat{B}\cdot \mat{V}+\vec{s}^{T}\cdot \mat{W}\cdot \mat{V}+
+\vec{e}^{T}_{1}\cdot \mat{V}.
+\end{equation}
+It's easy to check that if $\langle \vec{v},\vec{w} \rangle=0$, then $\mat{W}\cdot \mat{V}=\mat{W}^{'}\cdot \mat{V}^{'}\cdot \G_{n,2,m}=\mat{0}$. Then $\vec{c}_{v}=\vec{s}^{T}\cdot \mat{B}\cdot \mat{V}+\vec{e}^{T}_{1}\cdot \mat{V}$, so
+\begin{equation}
+\begin{aligned}
+\vec{c}&=[\vec{c}_{0}|\vec{c}_{v}]=[\vec{s}^{T}\mat{A}+\vec{e}^{T}_{0}|\vec{s}^{T}\cdot \mat{B}\cdot \mat{V}+\vec{e}^{T}_{1}\cdot \mat{V}]=\vec{s}^{T}[\mat{A}|\mat{B}\cdot \mat{V}]+[\vec{e}^{T}_{0}|\vec{e}^{T}_{1}\cdot \mat{V}]\\
+&=\vec{s}^{T}[\mat{A}|\mat{U}]+[\vec{e}^{T}_{0}|\vec{e}^{T}_{1}\cdot \mat{V}]=\vec{s}^{T}\mat{A}_{v}+[\vec{e}^{T}_{0}|\vec{e}^{T}_{1}\cdot \mat{V}].
+\end{aligned}
+\end{equation}
+And
+\begin{equation}
+\begin{aligned}
+z&=c_{2}-\vec{c}\vec{r}(mod\ q)=\vec{s}^{T}\vec{u}+e+\lfloor \frac{q}{2} \rfloor m-\vec{s}^{T}\vec{u}-[\vec{e}^{T}_{0}|\vec{e}^{T}_{1}\cdot \mat{V}]\vec{r}\\
+&=\lfloor \frac{q}{2} \rfloor m+\underbrace{e-[\vec{e}^{T}_{0}|\vec{e}^{T}_{1}\cdot \mat{V}]\vec{r}}_{\hat{\vec{e}}}(mod\ q)
+\end{aligned}
+\end{equation}
+If the norm $\|\hat{\vec{e}}\|< q/4$, then $|z|< q/4$ if and only if $m=0$, or else $m=1$. In this condition, our scheme is correct.  \qed
+\subsection{Security}
+In this part, we show the security proof of our IPE scheme as follows:
+\begin{theorem}
+Assuming the hardness of the standard LWE assumption, Our IPE scheme described above is weakly attribute hiding.
+\end{theorem}
+\noindent $\mat{Proof}$: To prove the theorem we define a series games against adversary $\mathcal{A}$ that play the weak attribute hiding game. The adversary $\A$ outputs two attribute vectors $\vec{w}_{0}$ and $\vec{w}_{1}$ at the beginning of each game, and at some point output two messages $m_{0},m_{1}$. The first and last games correspond to real security game with challenge ciphertexts $\enc(\pp,\vec{w}_{0},m_{0})$ and $\enc(\pp,\vec{w}_{1},m_{1})$ respectively. In the intermediate games we use the "alternative" simulation algorithms $\si.\setup,\si.\keygen$, $\si.\enc$. During the course of the game the adversary can only request keys for predicate vector $\vec{v}$ such that $\langle \vec{v}, \vec{w}_{0} \rangle \neq 0$ and $\langle \vec{v}, \vec{w}_{1} \rangle \neq 0$.\\[0.2cm]
+$\mat{Game\ 0}$: The challenger runs $\setup$, answers $\A$'s secret key queries using $\keygen$, and generates the challenge ciphertext using $\enc$ with attribute $\vec{w}_{0}$ and message $m_{0}$.\\[0.2cm]
+$\mat{Game\ 1}$: The challenger runs $\si.\setup$ with $\vec{w}^{*}=\vec{w}_{0}$, and answers $\A$'s secret key queries using $\si.\keygen$. The challenger generates the challenge ciphertext using $\si.\enc$ with attribute  $\vec{w}_{0}$ and message $m_{0}$.\\[0.2cm]
+$\mat{Game\ 2}$: The challenger runs $\si.\setup$ with $\vec{w}^{*}=\vec{w}_{0}$, and answers $\A$'s secret key queries using $\si.\keygen$. The challenger generates the challenge ciphertext by choosing a uniformly random element of the ciphertext space.\\[0.2cm]
+$\mat{Game\ 3}$: The challenger runs $\si.\setup$ with $\vec{w}^{*}=\vec{w}_{1}$, and answers $\A$'s secret key queries using $\si.\keygen$. The challenger generates the challenge ciphertext by choosing a uniformly random element of the ciphertext space.\\[0.2cm]
+$\mat{Game\ 4}$: The challenger runs $\si.\setup$ with $\vec{w}^{*}=\vec{w}_{1}$, and answers $\A$'s secret key queries using $\si.\keygen$. The challenger generates the challenge ciphertext using $\si.\enc$ with attribute  $\vec{w}_{1}$ and message $m_{1}$.\\[0.2cm]
+$\mat{Game\ 5}$: The challenger runs $\setup$, answers $\A$'s secret key queries using $\keygen$, and generates the challenge ciphertext using $\enc$ with attribute $\vec{w}_{1}$ and message $m_{1}$.\\[0.2cm]
+Now we define the "alternative" simulation algorithm as follows:\\[0.4cm]
+$\si.\setup$ $(1^{\lambda},1^{\ell},\vec{w}^{*})$: On input a security parameter $\lambda$, a parameter $\ell$ denoting the length of predicate(and the attribute) vector, and an attribute vector $\vec{w}^{*} \in \Z^{\ell}_{q}$, do the following:
+\begin{enumerate}
+\item Choose a random matrix $\mat{A} \xleftarrow {\$} \Z^{n \times m}_{q}$ and a random vector $\vec{u} \xleftarrow {\$} \Z^{n}_{q}$.\
+
+\item Choosing a random matrix $\mat{R}^{*} \xleftarrow {\$} \{-1,1\}^{m \times m}$.\
+
+\item Define the matrix
+\begin{equation}
+\mat{W}^{'}= \begin{bmatrix}
+w^{*}_{1} \mat{I}_{n}&w^{*}_{2} \mat{I}_{n}&\ldots&w^{*}_{\ell} \mat{I}_{n}
+\end{bmatrix} \in \Z^{n \times \ell n}_{q},
+\end{equation}
+and set $\mat{B}=\mat{A}\mat{R}^{*}-\mat{W}^{'}\cdot \G_{n\ell,\ell^{'},m} \in \Z^{n \times m}_{q}$.
+\end{enumerate}
+~~Output $\pp=(\mat{A}, \mat{B}, \vec{u}),\msk=(\mat{R}^{*}, \pp, \mat{T}_{\G_{n,2,m}})$.\\[0.4cm]
+$\si.\keygen$ $(\pp, \msk, \vec{v})$: On input a master key $\msk$ and a vector $\vec{v} \in \Z^{\ell}_{q}$, do the following:
+\begin{enumerate}
+\item Check $\langle \vec{v}, \vec{w}^{*} \rangle =0$, if so ,output $\perp$.\
+
+\item Define the matrix
+\begin{equation}
+\mat{V}^{'}= \begin{bmatrix}
+v_{1} \mat{I}_{n}\\
+v_{2} \mat{I}_{n}\\
+\vdots\\
+v_{\ell} \mat{I}_{n}
+\end{bmatrix} \in \Z^{\ell n \times n}_{q},~~ \mat{V}=\G^{-1}_{n\ell,\ell^{'},m}(\mat{V}^{'} \cdot \G_{n,2,m}).
+\end{equation}
+Set $\mat{U}=\mat{BV}, \mat{A}_{\vec{v}}=[\mat{A}|\mat{U}]=[\mat{A}|\mat{A}\mat{R}^{*}\mat{V}-\mat{W}^{'}\mat{V}^{'}\G_{n,2,m}]$.\
+
+\item Let $\vec{r}\leftarrow$ $\sampleright$ $(\mat{A},\mat{R}^{*}\mat{V}, \mat{W}^{'}\mat{V}^{'}, \mat{T}_{\G_{n,2,m}}, \vec{u}, \sigma)$, so that $\mat{A}_{\vec{v}}\cdot \vec{r}=\vec{u}$.
+\end{enumerate}
+~~Output the secret key $\sk_{\vec{v}}=\vec{r}$.\\[0.4cm]
+$\si.\enc$ $(\pp,\vec{w},m,\msk)$: This algorithm is the same as the $\enc$ algorithm, except that $\mat{R}^{*}$ is used instead of the random matrix $\mat{R}$ in step4.\\[0.6cm]
+We show that each pair of games($\mat{Game}$ $i$, $\mat{Game}$ $i+1$) are either statistically indistinguishable or computationally indistinguishable under the DLWE assumption.
+\begin{lemma}
+The view of the adversary $\A$ in $\mat{Game\ 0}$ is statistically closed to the view of $\A$ in $\mat{Game\ 1}$, similarly, $\mat{Game\ 4}$ is statistically closed to $\mat{Game\ 5}$.
+\end{lemma}
+\noindent $\mat{Proof}$. We just prove the case for $\mat{Game\ 0}$ and $\mat{Game\ 1}$.\
+
+First, The matrix $\mat{A}$ in $\pp$ is chosen by running $\trapgen$ in $\mat{Game\ 0}$, whereas it is a uniformly random matrix in $\Z^{n \times m}_{q}$ in $\mat{Game\ 1}$. Since $m=\Omega(n \log q)$, by $\mat{Lemma2.5}$, the matrix $\mat{A}$ output by $\trapgen$  is statistically indistinguishable from a uniformly random matrix, and thus the distribution of $\mat{A}$ in $\mat{Game\ 0}$ and $\mat{Game\ 1}$ are statistically close.\
+
+Next, We show that the distribution of \textbf{B} in $\pp$ and $\vec{c}_{1}$ in ciphertext in $\mat{Game\ 0}$ and $\mat{Game\ 1}$ are statistically indistinguishable. The difference between $(\mat{B},\vec{c}_{1})$ in two games is as follows:
+\begin{itemize}
+\item In $\mat{Game\ 0}$ the matrix $\mat{B}$ is uniformly random in $\Z^{n \times m}_{q}$. In $\mat{Game\ 1}$, $\mat{B}=\mat{A}\mat{R}^{*}-\mat{W}^{'}\G_{n\ell,\ell^{'},m}$. The matrix $\mat{R}^{*}$ is uniformly chosen from $\{-1,1\}^{m \times m}$.
+\item In $\mat{Game\ 0}$ the challenge ciphertext components $\vec{c}_{1}$ are computed as $\vec{c}_{1}=\vec{s}^{T}(\mat{B}+\mat{W})+\vec{e}^{T}_{1}=\vec{s}^{T}(\mat{B}+\mat{W}^{'}\G_{n\ell,\ell^{'},m})+\vec{e}^{T}_{0}\mat{R}^{*}$, where $\mat{B}$ is uniformly random in $\Z^{n \times m}_{q}$ and the matrix $\mat{R}^{*}$ is uniformly chosen from $\{-1,1\}^{m \times m}$.\\
+    In $\mat{Game\ 1}$ the challenge ciphertext components $\vec{c}_{1}$ is $\vec{c}_{1}=\vec{s}^{T}(\mat{A}\mat{R}^{*}-\mat{W}^{'}\G_{n\ell,\ell^{'},m}+\mat{W}^{'}\G_{n\ell,\ell^{'},m})+\vec{e}^{T}_{0}\mat{R}^{*}=\vec{s}^{T}\mat{A}\mat{R}^{*}+\vec{e}^{T}_{0}\mat{R}^{*}
+    =(\vec{s}^{T}\mat{A}+\vec{e}^{T}_{0})\mat{R}^{*}$. Where $\mat{R}^{*}$ are the same matrix used to compute the public parameters $\mat{B}$. So the main difference between the two games is that the matrix $\mat{R}^{*}$ is chosen by $\enc$ and used only in the ciphertext $\vec{c}_{1}$ in $\mat{Game\ 0}$, whereas in $\mat{Game\ 1}$, it plays a double role: it's used to construct the matrix $\mat{B}$ in $\pp$ as well as the ciphertext $\vec{c}_{1}$.
+\end{itemize}
+
+Now we show that the distributions $(\mat{A}, \mat{B},\vec{c}_{1})$ in $\mat{Game\ 0}$ and $\mat{Game\ 1}$ are statistically indistinguishable. for $\mat{B}$ is uniformly random and $\mat{R}^{*}$ is uniformly random in $\{-1,1\}$, so by the $generalized$ leftover hash lemma, the following two distributions are statistically indistinguishable:
+\begin{equation}
+(\mat{A},\mat{A}\mat{R}^{*}-\mat{W}^{'}\G_{n\ell , \ell^{'},m}, \vec{e}^{T}_{0}\mat{R}^{*})\approx_{s}(\mat{A,B},\vec{e}^{T}_{0}\mat{R}^{*})
+\end{equation}
+We add the same quantity to both sides of Equation(14), we see that the following two distributions are statistically close:
+\begin{equation}
+\begin{split}
+(\mat{A},\mat{A}\mat{R}^{*}-\mat{W}^{'}\G_{n\ell , \ell^{'},m},& \underbrace{\vec{s}^{T}(\mat{A}\mat{R}^{*}-\mat{W}^{'}\G_{n\ell , \ell^{'},m}+\mat{W}^{'}\G_{n\ell , \ell^{'},m})}
+_{added\ term}+\vec{e}^{T}_{0}\mat{R}^{*})\\
+&\approx_{s}(\mat{A,B},\underbrace{\vec{s}^{T}(\mat{B}+\mat{W}^{'}\G_{n\ell , \ell^{'},m})}_{added\ term}+\vec{e}^{T}_{0}\mat{R}^{*})\\
+\end{split}
+\end{equation}
+The distribution on the left hand side of (15) is the distribution of $(\mat{A,B},\vec{c}_{1})$ in $\mat{Game\ 1}$, while the right hand side is the distribution in $\mat{Game\ 0}$. So the two distributions are statistically indistinguishable.\qed \\[0.2cm]
+
+Next,we show the secret keys output by $\si.\keygen$ are statistically indistinguishable from those output by $\keygen$. Assuming $\sigma$ is sufficiently large, it follows from the properties of the algorithm $\sampleleft$ and $\sampleright$,  in both games the secret key is chosen from $\mathcal{D}_{\Lambda^{\vec{u}}_{q}(\mat{A}_{v}),\sigma}$ with overwhelming probability, so the two keys are statistically indistinguishable.
+\begin{lemma}
+If the DLWE assumption holds, then the view of $\A$ in $\mat{Game\ 1}$ is computationally indistinguishable from the view of $\A$ in $\mat{Game\ 2}$, similarly, $\mat{Game\ 3}$ is computationally indistinguishable from $\mat{Game\ 4}$.
+\end{lemma}
+\noindent $\mat{Proof}$. We just prove the case for $\mat{Game\ 1}$ and $\mat{Game\ 2}$.\
+
+Suppose we are given $m+1$ LWE instances $(\vec{a}_{i},b_{i})$ for $i=0,...,m$, where either $b_{i}=\vec{s}^{T}\vec{a}_{i}+e_{i}$ for some fixed random secret $\vec{s}\xleftarrow{\$} \Z^{n}_{q}$ and  Gaussian noise $e_{i}\leftarrow D_{\Z_{q},\alpha}$ or $b_{i}$ is uniformly random in $\Z_{q}$. Define the following variables:
+\begin{equation}
+\begin{split}
+&\mat{A}=\begin{bmatrix}
+\vec{a}_{1}&\ldots&\vec{a}_{m}
+\end{bmatrix} \in \Z^{n \times m}_{q} ~~~~~~~ \vec{u}=\vec{a}_{0}\\
+&\vec{c}_{0}=(b_{1},...,b_{m}) \in \Z^{m}_{q}~~~~~~~~~~~~c_{2}=b_{0}+\lfloor \frac{q}{2}\rfloor m\\
+\end{split}
+\end{equation}
+We simulate the challenger as follows:
+\begin{itemize}
+\item $\mat{Setup}$: Run $\si.\setup$ with $\vec{w}^{*}=\vec{w}_{0}$. and let $\mat{A}$, $\vec{u}$ as defined above.
+
+\item $\mat{Secret}\  \mat{key}\  \mat{queries}$: Run $\si.\keygen$ .
+
+\item $\mat{Challenge}\  \mat{ciphertext}$: Let $\vec{c}_{1}=\vec{c}_{0}\mat{R}^{*}$(using the $\mat{R}^{*} \in \msk$). Output $(\vec{c}_{0}, \vec{c}_{1}, c_{2})$.
+\end{itemize}
+In the $\si.\enc$ algorithm it sets:
+\begin{equation}
+\begin{split}
+\vec{c}_{1}&=\vec{s}^{T}(\mat{A}\mat{R}^{*}-\mat{W}^{'}\G_{n\ell,\ell^{'},m}+\mat{W}^{'}\G_{n\ell,\ell^{'},m})+\vec{e}^{T}_{0}\mat{R}^{*}=\vec{s}^{T}\mat{A}\mat{R}^{*}+\vec{e}^{T}_{0}\mat{R}^{*}\\
+&=(\vec{s}^{T}\mat{A}+\vec{e}^{T}_{0})\mat{R}^{*}.
+\end{split}
+\end{equation}
+So if $b_{i}=\vec{s}^{T}\vec{a}_{i}+e_{i}$, then $\vec{c}_{1}=\vec{c}_{0}\mat{R}^{*}$ and the simulator is the same as a $\mat{Game\ 1}$ challenger. Whereas if $b_{i}$ is random in $\Z_{q}$, then simulated ciphertext is $(\vec{c}_{0}, \vec{c}_{0}\mat{R}^{*}, c_{2})$. By the leftover hash lemma, $\vec{c}_{0}\mat{R}^{*}$ is uniformly random. Thus the ciphertext in this case is uniformly random and the simulator is identical to $\mat{Game\ 2}$'s challenger.\
+
+We conclude that any efficient adversary that can distinguish $\mat{Game\ 1}$ from $\mat{Game\ 2}$ can solve the DLWE problem.\qed
+\begin{lemma}
+The view of $\A$ in $\mat{Game\ 2}$ is statistically indistinguishable from the view of $\A$ in $\mat{Game\ 3}$.
+\end{lemma}
+\noindent $\mat{Proof}$. Note that the only difference between the two games is that the attribute vector $\vec{w}^{*}$ is equal to $\vec{w}_{0}$ in $\mat{Game\ 2}$, whereas $\vec{w}^{*}=\vec{w}_{0}$ in $\mat{Game\ 3}$. The attribute vector $\vec{w}^{*}$ appears in the public parameter $\mat{B}=\mat{A}\mat{R}^{*}-\mat{W}^{'}\G_{n\ell,\ell^{'},m}$, by the $generalized$ leftover hash lemma $(\mat{A},\mat{AR}^{*})$ is statistically indistinguishable from ($\mat{A}$,$\mat{U}_{uni}$), where $\mat{U}_{uni}$ is uniformly random. So $\mat{A}\mat{R}^{*}-\mat{X}$ for any fixed $\mat{X}$ is also uniformly random. It follows that the distribution of $\mat{B}$ in the two games are statistically close. \qed \\[0.3cm]
+Now we conclude the proof of the Theorem. Suppose that there is an efficient adversary $\A$ that can win the security game. Let $\A^{(i)}$ denote the output of $\A$ in $\mat{Game}$ $i$. We have
+\begin{equation}
+|Pr[\A^{(0)}=1]-Pr[\A^{(5)}=1]|\geq\frac{1}{poly(n)}.
+\end{equation}
+By a standard hybrid argument, this implies that
+\begin{equation}
+|Pr[\A^{(i)}=1]-Pr[\A^{(i+1)}=1]|\geq\frac{1}{poly(n)}.
+\end{equation}
+for $i=0,...,4$. Since $\A$ is polynomial time, $\mat{Lemma(4.3)}$ implies that (19) cannot hold for $i=0$ or 4, $\mat{Lemma(4.5)}$ implies that (19) cannot hold for $i=2$. So from $\mat{Lemma(4.4)}$ $\A$ can be used to solve the DLWE problem. \qed
+
+
+\subsection{Parameter Setting}
+We set the system parameters as follows, in which the $\delta>0$ is an arbitrarily small constant:
+\begin{table}[htbp]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline parameters & Description & Setting\\
+\hline $\lambda$ & security parameter & -\\
+\hline $n$ & $\pp$-lattice row dimension & $n=\lambda$\\
+\hline $m$ & $\pp$-lattice column dimension & $m=n^{1+\delta}$\\
+\hline $q$ & modulus & $q=n^{4.5+4\delta}\log^{3.5+2\delta}(n)$\\
+\hline $s$ & $\sampleleft$ and $\sampleright$ width & $s=n^{1.5+1.5\delta}\log^{1.5+\delta}(n)$\\
+\hline $\alpha$ & error width & $\alpha=\sqrt{n}\log^{1+\delta}(n)$\\
+\hline $\ell$ & predicate vectors and attribute vectors dimension & $\ell=\log\log(n)$\\
+\hline $\ell^{'}$ & integer-base parameter & $\ell^{'}=\log(n)$\\
+\hline
+\end{tabular}
+\caption{Parameters and Example setting}
+\end{table}\\[0.4cm]
+We chose the parameters to satisfy the following constraints:
+\begin{itemize}
+ \item To ensure correctness, it requires that $|e-[\vec{e}^{T}_{0}|\vec{e}^{T}_{1}\cdot \mat{V}]\vec{r}|< q/4$; we just need to bound the dominating term. So we parse the  vector $\vec{r}$ into two equal-length vectors $\vec{r}_{1}$ and $\vec{r}_{2}$, then:
+ \begin{equation}
+       |\vec{e}^{T}_{1}.\mat{V}\cdot \vec{r}_{2}|\leq \| \vec{e}^{T}_{0}\|\cdot \| \mat{R}\|
+       \cdot \| \mat{V}\| \cdot \| \vec{r}_{2}\|\approx \alpha\sqrt{m}\cdot \sqrt{m}\cdot \ell^{'}m\cdot s\sqrt{m}=m^{2.5}s\alpha \ell^{'}< q/4
+\end{equation}
+ \item For $\sampleleft$, we know $\| \widetilde{\mat{T}_{\mat{A}}}\|=O(\sqrt{n\log(q)})$, so it needs that the Gaussian parameter $s$ satisfies
+ \begin{equation}
+ s>\sqrt{n\log(q)}.\omega(\sqrt{\log(m)}).
+ \end{equation}
+ \item For $\sampleright$, it's known that $\| \widetilde{\mat{T}_{\mat{A}}}\|\leq 5$ and in the proof of security
+ \begin{equation}
+ s_{\mat{R}}\leq \| \mat{R}^{*}\| \cdot \| \mat{V}\|\leq 12\sqrt{2m}\cdot (\ell^{'}m)=O(2^{\ell}m^{1.5})
+ \end{equation}
+ Therefore, we need the Gaussian parameter $s$ to satisfy a stronger constraint
+ \begin{equation}
+ s>2^{\ell}m^{1.5}\omega(\sqrt{\log(m)}).
+ \end{equation}
+ \item To apply the Leftover Hash Lemma, we need $m\geq (n+1)\log(q)+\omega(\log(n))$.
+ \item For the hardness of DLWE assumption, we apply Regev's reduction, then we need $\alpha >\sqrt{n}\omega(\log(n))$.
+\end{itemize}
+\textbf{Remark}. Regev \cite{STOC:Regev05} showed that there exists an efficiently samplable $B$-bounded distribution $\chi$ for $B\geq \sqrt{n}.\omega(\log(n))$, so that if there is an efficient algorithm that solves the (average-case)$\LWE_{n,m,q,\chi}$ problem, then there is an efficient quantum algorithm that solves $\Gapsvp_{\tilde{O}(n.q/B)}$ and $\Sivp_{\tilde{O}(n.q/B)}$ on any $n$-dimensional lattice. The work of Brakerski et al.\cite{STOC:BLPRS13} shows an analogous-but-classical result for any $\sqrt{n}$-dimensional lattice. For the case of our parameter setting ,the resulting lattice problems' approximation factor is $\widetilde{O}(n^{5+\epsilon})$, for $\epsilon>0$.\\[0.6cm]
+\textbf{Further Optimizations}. We just use a trivial bound $\ell^{'}m$ to bound the matrix $\textbf{V}$. However, the $\textbf{V}$ is highly sparse in fact, it's possible to optimize $\textbf{V}$; e.g. about $\ell^{'}\log_{2}(q)$. Then the parameters $s$ and $q$ can be selected more aggressively, e.g. $s\approx \sqrt{m}$ and $q\approx n^{2.5}$, this will result in a better approximation factor of about $\widetilde{O}(n^{3+\epsilon})$.\
+
+Using the tag-based sampling algorithms of \cite{EC:MicPei12} in place of \cite{EC:AgrBonBoy10}'s $\sampleright$ procedure leads to an approximation factor of $\widetilde{O}(n^{1.5})$, which matches the approximation factor of Dual Regev type $\mat{PKE}$, up to polylogarithmic factors in the security parameter $n$.

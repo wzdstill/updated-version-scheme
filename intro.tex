@@ -1,0 +1,50 @@
+\section{Introduction}
+\leo{I will take care of intro later. When cite papers, use space before it. See the example below}
+Functional encryption has become quite popular in last few years because it provides the system administrator with fine-grained control over the decryption capabilities of its users. Two important examples of functional encryption are $attirbute-based\ encryption(\ABE)$~\cite{EC:SahWat05, CCS:GPSW06} and $predicate\ encryption(\PE)\\ $~\cite{TCC:BonWat07,
+EC:KatSahWat08}. In (key-police)$\ABE$ and $\PE$ systems, each ciphertext $c$ is associated with an attribute $a$ and each secret key $s$ is associated with predicate $f$. A user holding the key $s$ can decrypt $c$ if and only if $f(a)=1$. The difference between the two types of systems is in amount of information revealed: an $\ABE$ system reveals the attribute associated with each ciphertext, while a $\PE$ system keeps the attribute hidden.\
+
+In this paper, we focus on the notation of inner-product encryption(IPE), introduced by Katz, Sahai, and Waters ~\cite{EC:KatSahWat08}, which is a $\PE$ scheme that supports the inner-product predicate: attributes $a$ and predicates $f$ are expressed as vectors $\overrightarrow{v}_{a}$ and $\overrightarrow{w}_{f}$. We say $f(a)=1$ if and only if $\langle \overrightarrow{v}_{a}, \overrightarrow{w}_{f} \rangle=0$. As point out in  ~\cite{EC:KatSahWat08}, inner-product predicates can also support conjunction, subset and range queries on encrypted date\cite{TCC:BonWat07} as well as disjunctions, polynomial evaluation, and $\mat{CNF}$ and $\mat{DNF}$ formulas~\cite{EC:KatSahWat08}.\
+
+In recent years, there were a number of IPE schemes~\cite{EC:KatSahWat08, AC:OkaTak09, EC:LOSTW10, C:OkaTak10, PKC:AttLib10, Park2011Inner, CANS:OkaTak11, EC:OkaTak12} have been proposed, the security of these schemes is based on composite-number or prime order groups. while assumption such as these can often be shown to hold in a suitable generic group model, to obtain more confidence in security, we would like to build IPE scheme based on computational problems such as lattice-based hardness problems, whose complexity is better understood.\
+
+Agrawal, Freeman, and Vaikuntanathan~ \cite{AC:AgrFreVai11} proposed the first IPE scheme based on the LWE assumption, and Xagawa ~\cite{PKC:Xagawa13} improved the efficiency of [AFV11]'s scheme. While the scheme of ~\cite{PKC:Xagawa13} has public parameters of size $O(l n^{2}\lg^{2}q)$ and ciphertexts of size $O(l n\lg^{2}q)$, where $l$ is the length of predicate vector, $n$ is the security parameter, and $q$ is the modulus. which still makes the scheme impractical.
+
+\subsection{Our Contributions}
+S\\
+S\\
+S\\
+S\\
+S\\
+S\\
+S\\
+S\\
+S\\
+S\\
+S\\
+S\\
+S\\
+S\\
+S\\
+S\\
+S\\
+S\\
+S\\
+
+
+
+
+
+
+
+
+\subsection{Related Work}
+As noted previously, we focus on the efficiency of the lattice-based IPE scheme, there are other lines of research on IPE scheme.\
+
+For example, considered the CCA security, ~\cite{LC:AbdDeCMoc12} proposed a CCA secure HIPE scheme using the CHK conversion ~\cite{Boneh2007Chosen}. Recently, \cite{cryptoeprint:2017:038}(PKC2017) presented a generic construction of IND-FE-CCA IPE from projective hash functions with homomorphic properties.\
+
+Another line of study of IPE is the multiple application scenarios. ~\cite{AC:BisJaiKow15} proposed a Function-hiding IPE scheme, ~\cite{PKC:DatDutMuk16} improved the security model of \cite{AC:BisJaiKow15} into full-hiding security model without requiring any extra restriction. Recently, \cite{cryptoeprint:2016:425}(Eurocrypt2017) proposed a multi-input IPE scheme from pairings. We emphasize that \cite{cryptoeprint:2016:425}'s technical is not suit our scheme, so it's not easy to meet the requirements that the lattice-based multi-input IPE scheme works for any polynomial number of encryption slots and security against unbounded collusion.
+
+\leo{the paper will appear in Eurocrypt'17 is not about IPE, but about FE supporting inner-product. See the referenced paper in the EC'17 paper to write a paragraph about this line of work.}
+
+
+

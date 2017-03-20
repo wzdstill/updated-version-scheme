@@ -1,0 +1,287 @@
+\documentclass[11pt,hidelinks]{article}
+\usepackage{url}
+\usepackage{times}
+\usepackage[margin=1in]{geometry}
+\usepackage{amssymb,amsmath,amsfonts,amsthm}
+\usepackage{enumerate}
+\usepackage{enumitem}
+\usepackage{framed}
+\usepackage{xcolor,xspace}
+\usepackage{hyperref}
+\usepackage{float,subfigure}
+\input{lattice}
+\input{crypto}
+
+
+\newtheorem*{thm*}{Theorem}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{cor}[theorem]{Corollary}
+\newtheorem{asmp}[theorem]{Assumption}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{fact}[theorem]{Fact}
+
+
+
+
+\newcommand{\leo}[1]{{\color{cyan}[Leo: #1]}}
+\newcommand{\todo}[1]{{\color{red}[TO-DO: #1]}}
+\newcommand{\wang}[1]{{\color{red}[Wang: #1]}}
+\newcommand{\proofsketch}{ \noindent {\it Proof (sketch): }}
+\newcommand{\sampled}{\mathsf{SampleD}}
+
+
+\begin{document}
+\title{Compact Inner Product Encryption from LWE}%\\
+
+\author{}
+\date{}
+\maketitle
+
+\begin{abstract}
+s\\
+s\\
+s\\
+\end{abstract}
+
+\newpage
+
+\input{intro}
+\input{prelim}
+
+
+
+\input{Gadget}
+\input{scheme}
+\input{conclu}
+
+\newpage
+
+\bibliographystyle{alpha}
+\bibliography{abbrev3,crypto_crossref,extra,park,BCHK,BBL,ARW}
+
+
+\begin{appendix}
+\section{Hierarchical Inner-Product Encryption}
+We use the definition proposed by Okamoto and Takashima \cite{AC:OkaTak09}. We call a tuple of positive integers $\overrightarrow{\mu}:=(n,d;\mu_{1},...,\mu_{d})$ s.t $\mu_{0}=0<\mu_{1}<\mu_{2}<...<\mu_{d}=n$ a format of hierarchy of depth $d$ attribute spaces. Let $\sum_{\ell}(\ell=1,..,d)$ be the sets of attributes, where each $\sum_{\ell}:= \F^{\mu_{\ell}-\mu_{\ell-1}}_{q} \backslash \{\overrightarrow{0}\}$. Let the hierarchical attributes $\sum:=\bigcup^{d}_{\ell=1}(\sum_{1} \times ...\times \sum_{\ell})$, where the union is a disjoint union. Then, for $\overrightarrow{v}_{i} \in \F^{\mu_{\ell}-\mu_{\ell-1}}_{q} \backslash \{\overrightarrow{0}\}$, the hierarchical predicate $f_{(\overrightarrow{v}_{1},...,\overrightarrow{v}_{\ell})}(\overrightarrow{x}_{1},...,\overrightarrow{x}_{h})=1$ iff $\ell\leq h$ and $\overrightarrow{x}_{i}.\overrightarrow{v}_{i}=0$ for all $i$ s.t. $a\leq i \leq \ell$.\
+
+Let the space of hierarchical predicates $\mathcal{F}=:\{f_{(\overrightarrow{v}_{1},...,\overrightarrow{v}_{\ell})}|\overrightarrow{v}_{i} \in \F^{\mu_{\ell}-\mu_{\ell-1}}_{q}\backslash \{\overrightarrow{0}\}\}$. We call $h$ (resp.$\ell$) the level of $(\overrightarrow{x}_{1},...,\overrightarrow{x}_{h})$ (resp.$(\overrightarrow{v}_{1},...,\overrightarrow{v}_{h})$.
+\begin{definition}
+Let $\overrightarrow{\mu}:=(n,d;\mu_{1},...,\mu_{d})$ s.t $\mu_{0}=0<\mu_{1}<\mu_{2}<...<\mu_{d}=n$ be a format of hierarchy of depth $d$ attribute spaces. A hierarchical predicate encryption (HPE) scheme for the class of hierarchical inner-product predicates $\mathcal{F}$ over the set of hierarchical attributes $\sum$ consists of probabilistic polynomial time algorithms $\setup, \keygen, \enc, \dec$ and $\delegate_{\ell}$ for $\ell=1,...,d-1$. They are given as follows:
+\begin{itemize}
+\item $\setup$ takes as input security parameter $1^{\lambda}$ and format of hierarchy $\overrightarrow{\mu}$, and outputs master public key $\pp$ and master secret key $\msk$.
+\item $\keygen$ takes as input the $\pp, \msk$, and predicate vectors $(\overrightarrow{v}_{1},...,\overrightarrow{v}_{\ell})$. It outputs a corresponding secret key $\sk_{(\overrightarrow{v}_{1},...,\overrightarrow{v}_{\ell})}$.
+\item $\enc$ takes as input the $\pp$, attribute vectors $(\overrightarrow{x}_{1},...,\overrightarrow{x}_{h})$, where $1\leq h \leq d$, and plaintext $m$ in some associated plaintext space, $\mat{msg}$. It returns ciphertext $c$.
+\item $\dec$ takes as input the master public key $\pp$, secret key $\sk_{(\overrightarrow{v}_{1},...,\overrightarrow{v}_{\ell})}$, where $1\leq \ell \leq d$, and ciphertext $c$. It outputs either plaintext $m$ or the distinguished symbol $\perp$.
+\item $\delegate_{\ell}$ takes as input the master public key $\pp$, $\ell$-th level secret key $\sk_{(\overrightarrow{v}_{1},...,\overrightarrow{v}_{\ell})}$, and $(\ell+1)$-th level predicate vector $\overrightarrow{v}_{\ell+1}$. It returns $(\ell+1)$-th level secret key $\sk_{(\overrightarrow{v}_{1},...,\overrightarrow{v}_{\ell+1})}$.
+\end{itemize}
+\end{definition}
+\paragraph{Correctness.} For all correctly generated $\pp$ and $\sk_{(\overrightarrow{v}_{1},...,\overrightarrow{v}_{\ell})}$, generate $c \xleftarrow{R} \enc(\pp, m, (\overrightarrow{x}_{1},...,\overrightarrow{x}_{h}))$ and $m^{'}= \dec(\pp, \sk_{(\overrightarrow{v}_{1},...,\overrightarrow{v}_{\ell})}, c)$. If $f_{(\overrightarrow{v}_{1},...,\overrightarrow{v}_{\ell})}(\overrightarrow{x}_{1},...,\overrightarrow{x}_{h})=1$, then $m^{'}=m$. Otherwise, $m^{'}\neq m$ except for negligible probability. For $f$ and $f^{'}$ in $\mathcal{F}$, we denote $f^{'}\leq f$ if the predicate vector for $f$ is the prefix of that for $f^{'}$.
+
+\paragraph{Security.} A hierarchical inner-product predicate encryption scheme for hierarchical predicates $\mathcal{F}$ over hierarchical attributes $\sum$ is \textbf{selectively attribute-hiding against plaintext attacks} if for all probabilistic polynomial-time adversaries $\A$, the advantage of $\A$ in the following experiment is negligible in the security parameter.
+\begin{enumerate}
+\item $\A$ outputs challenge attribute vectors $X^{(0)}=(\overrightarrow{x}^{(0)}_{1},....,\overrightarrow{x}^{(0)}_{h}), X^{(1)}=(\overrightarrow{x}^{(1)}_{1},....,\overrightarrow{x}^{(1)}_{h})$.
+\item $\setup$ is run to generate keys $\pp$ and $\msk$, and $\pp$ is given to $\A$.
+\item $\A$ may adaptively makes a polynomial number of queries of the following type:
+ \begin{itemize}
+ \item $\A$ asks the challenger to create a secret key for a predicate $f \in \mathcal{F}$. The challenger creates a key for $f$ without giving it to $\A$.
+ \item $\A$ specifies a key for predicate $f$ that has already been created, and asks the challenger to perform a delegation operation to create a child key for $f^{'} \leq f$. The challenger computes the child key without giving it to the adversary.
+ \item $\A$ asks the challenger to reveal an already-created key for predicate $f$ s.t. $f(X^{(0)})=f(X^{(1)})=0$.
+ \end{itemize}
+ Note that when key creation requests are made, $\A$ does not automatically see the created key. $\A$ see a key only when it makes a reveal key query.
+\item $\A$ outputs challenge plaintexts $m_{0},m_{1}$.
+\item A random bit $b$ is chosen. $\A$ is given $c\xleftarrow{R} \enc(\pp, m_{b}, X^{(b)})$.
+\item The adversary may continue to request keys for additional predicate vectors subject to the restrictions given in step 3.
+\item $\A$ outputs a bit $b^{'}$, and succeeds if $b^{'}=b$.
+\end{enumerate}
+We define the advantage of $\A$ as the quantity $\advantage^{HIPE}_{\A}(\lambda)=|Pr[b^{'}=b]-1/2|$.
+\subsection{Our HIPE Scheme}
+We can apply the technical in our basic IPE scheme to optimize the hierarchical inner-product encryption scheme proposed by \cite{PKC:Xagawa13}.  For $i \in [d]$, we denote $\sigma_{i}$ to be the Gaussian parameter used in the $\keygen$ and $\delegate$ algorithm. Roughly speaking, we stack matrices $\mat{B}_{\vec{v}_{i}}$ to make IPE hierarchical.\\[0.4cm]
+$\setup(1^{\lambda}, n, q, m, \vec{\mu})$. On input a security parameter $\lambda$, and an hierarchical format of depth $d$ $\vec{\mu}=(\ell,d;\mu_{1},...,\mu_{d})$:
+\begin{enumerate}
+\item $(\mat{A}, \mat{T}_\mat{A})\leftarrow \trapgen(1^{\lambda}, q, n, m)$.
+\item Chose a random matrix $\mat{B}\xleftarrow{\$} \Z^{n \times m}_{q}$ and a random vector $\vec{u}\xleftarrow{\$} \Z^{n}_{q}$.
+\end{enumerate}
+~~~~~Output $\pp=(\mat{A}, \mat{B}, \vec{u})$ and $\msk= \mat{T}_\mat{A}$.\\[0.4cm]
+$\keygen(\pp, \msk, \overrightarrow{\mat{V}})$: On input $\pp, \msk$ and predicate vectors $\overrightarrow{\mat{V}}=(\vec{v}_{1},...,\vec{v}_{j})$ where $\vec{v}_{i}=(v_{i,1},...,v_{i,\ell})$:
+\begin{enumerate}
+\item For all $i \in [j]$, define the matrix
+\begin{equation}
+\mat{V}^{'}_{i}= \begin{bmatrix}
+v_{i,1} \mat{I}_{n}\\
+v_{i,2} \mat{I}_{n}\\
+\vdots\\
+v_{i,\ell} \mat{I}_{n}
+\end{bmatrix} \in \Z^{\ell n \times n}_{q},~~~ \mat{V}_{i}=\G^{-1}_{n\ell,\ell^{'},m}(\mat{V}^{'}_{i}\cdot \G_{n,2,m}) \in [\ell^{'}]^{m \times m}.
+\end{equation}
+\item Set  $\mat{A}_{\overrightarrow{\mat{V}}}=[\mat{A} | \mat{B}\mat{V}_{1}| ...... | \mat{B}\mat{V}_{j}] \in \Z^{n \times (j+1)m}_{q}$.
+\item Using the master secret key $\mat{T}_\mat{A}$ to construct short basis $\mat{E}^{'}_{\overrightarrow{\mat{V}}}$ for  $\Lambda^{\perp}_{q}(\mat{A}_{\overrightarrow{\mat{V}}})$  by  invoking the $\extb$ algorithm.
+\item Using the algorithm $\randb(\mat{E}^{'}_{\overrightarrow{\mat{V}}}, \sigma_{j})$ to randomize $\mat{E}^{'}_{\overrightarrow{\mat{V}}}$ , then outputs $\mat{E}_{\overrightarrow{\mat{V}}}$.
+\end{enumerate}
+\leo{since the basis of $\mat{A}_{\overrightarrow{\mat{V}}}$ is $2m \times 2m$, there might not be enough entropy to do the algorithm. But if you use the extendbasis introduced in the Bonsai tree paper, the trapdoor of $\mathbf{A}$ will be completely. Thus, I think this scheme is not correct.}
+~~~~~Output $\sk_{\overrightarrow{\mat{V}}}=\mat{E}_{\overrightarrow{\mat{V}}}$.\\[0.4cm]
+\wang{For your attack, since the definition of the HIPE needs that $\langle \vec{v}_{i}, \vec{w}_{i} \rangle = 0$ for all $i\leq \ell$, so even if the adversary gets the secret key for $((1,...1),(-a_{1}b^{-1}_{1},...,-a_{n}b^{-1}_{n}))$, he still can not decrypt the ciphertext for attribute $((a_{1},...,a_{n}),(b_{1},...,b_{n}))$. The key point is that $\langle \vec{v}_{i}, \vec{w}_{i} \rangle = 0$ for all $i\leq \ell$ but not the summation of all the inner products of the predicate and attribute vectors equals to $0$}\\[0.4cm]
+$\enc(\pp, \overrightarrow{\mat{W}}, m)$: On input $\pp$, a message $m \in \{0,1\}$, and attribute vectors $\overrightarrow{\mat{W}}=(\vec{w}_{1},...,\vec{w}_{h})$ where $\vec{w}_{i}=(w_{i,1},...,w_{i,\ell})$:
+\begin{enumerate}
+\item Choose a random vector $\vec{s} \xleftarrow{\$} \Z^{n}_{q}$.
+\item Set $\vec{c}_{0}\leftarrow \vec{s}^{T}\textbf{A}+ \vec{e}^{T}_{0}$, where $\vec{e}_{0}\leftarrow \chi^{m}$.
+\item Set $c\leftarrow \vec{s}^{T}\vec{u}+e+\lfloor q/2 \rfloor m$, where $e\leftarrow \chi$.
+\item For all $i \in [h]$, define the matrix
+\begin{equation}
+\mat{W}^{'}_{i}= \begin{bmatrix}
+w_{i,1} \mat{I}_{n}&w_{i,2} \mat{I}_{n}&\ldots&w_{i,\ell} \mat{I}_{n}
+\end{bmatrix} \in \Z^{n \times \ell n}_{q},~~~ \mat{W}_{i}=\mat{W}^{'}_{i}\cdot \G_{n\ell,\ell^{'},m} \in \Z^{n \times m}_{q}.
+\end{equation}
+choose a random matrix $\mat{R}_{i} \xleftarrow{\$} \{-1,1\}^{m \times m}$ and set $\vec{c}_{i} \leftarrow \vec{s}^{T}(\mat{B}+ \mat{W}^{'}_{i})+ \vec{e}^{T}_{0}\mat{R}_{i}$.
+\end{enumerate}
+~~~~~Output $\ct=(\vec{c}_{0}, \{\vec{c}_{i}\}, c)$.\\[0.4cm]
+$\dec(\pp, \sk_{\overrightarrow{\mat{V}}}, \ct)$: On input $\pp$, a decryption key $\sk_{\overrightarrow{\mat{V}}}$ where $\overrightarrow{\mat{V}}=(\vec{v}_{1},...,\vec{v}_{j})$, and a ciphertext $\ct=(\vec{c}_{0}, \{\vec{c}_{i}\}, c)$:
+\begin{enumerate}
+\item For $i \in [j]$, set $\vec{c}_{\vec{v}_{i}}=\vec{c}_{i}\cdot \mat{V}_{i}$.
+\item Let $\vec{c} \leftarrow [\vec{c}_{0},\vec{c}_{\vec{v}_{1}}...,\vec{c}_{\vec{v}_{j}}] \in \Z^{(j+1)m}_{q}$.
+\item Set $\tau_{t}=\sigma_{t}.\sqrt{(t+1)m}.\omega(\sqrt{(t+1)m})$, Then $\tau_{t}\geq \| \widetilde{\mat{E}_{\overrightarrow{\mat{V}}}} \|\cdot \omega(\sqrt{(t+1)m})$.
+\item Compute $\vec{x}_{\overrightarrow{\mat{V}}} \leftarrow \samplepre(\mat{A}_{\overrightarrow{\mat{V}}}, \mat{E}_{\overrightarrow{\mat{V}}}, \vec{u}, \tau_{t})$.
+\item Compute $z=c-\vec{c}\cdot \vec{x}_{\overrightarrow{\mat{V}}}$ (mod $q$), and output $\lfloor (2/q)z \rceil \in \{0,1\}$.
+\end{enumerate}
+$\delegate(\pp, \sk_{\overrightarrow{\mat{V}}}, \mat{V}^{'})$: On input $\pp$, a decryption key $\sk_{\overrightarrow{\mat{V}}}=\mat{E}_{\overrightarrow{\mat{V}}}$, where $\overrightarrow{\mat{V}}=(\vec{v}_{1},...,\vec{v}_{j})$, and $\overrightarrow{\mat{V}}^{'}=(\vec{v}_{1},...,\vec{v}_{j},\vec{v}_{j+1},...,\vec{v}_{t})$, $\vec{v}_{i}=(v_{i,1},...,v_{i,\ell})$. do:
+\begin{enumerate}
+\item For all $i \in [t]$, define the matrices
+\begin{equation}
+ \mat{V}^{'}_{i}= \begin{bmatrix}
+v_{i,1} \mat{I}_{n}\\
+v_{i,2} \mat{I}_{n}\\
+\vdots\\
+v_{i,l} \mat{I}_{n}
+\end{bmatrix} \in \Z^{\ell n \times n}_{q},~~~ \mat{V}_{i}=\G^{-1}_{n\ell,\ell^{'},m}(\mat{V}^{'}_{i}\cdot \G_{n,2,m}) \in [\ell^{'}]^{m \times m}.
+\end{equation}
+\item Set $\mat{A}_{\overrightarrow{\mat{V}}^{'}}=[\mat{A} | \mat{B}\mat{V}_{1}| ...... | \mat{B}\mat{V}_{t}] \in \Z^{n \times (t+1)m}_{q}$
+\item Recall that the secret key $\mat{E}_{\overrightarrow{\mat{V}}}$ is a short basis for $\Lambda^{\perp}_{q}(\mat{A}_{\overrightarrow{\mat{V}}})$. Using it to construct a short basis for $\Lambda^{\perp}_{q}(\mat{A}_{\overrightarrow{\mat{V}}^{'}})$ by invoking
+\begin{equation}
+\mat{E}^{'}_{\overrightarrow{\mat{V}}^{'}} \leftarrow \extb ( \mat{A}_{\overrightarrow{\mat{V}}}, [\mat{B}\mat{V}_{j+1}|...|\mat{B}\mat{V}_{t}], \mat{E}_{\overrightarrow{\mat{V}}} ).
+\end{equation}
+\item Using the algorithm $\randb(\mat{E}^{'}_{\overrightarrow{\mat{V}}^{'}}, \sigma_{t})$ to randomize $\mat{E}^{'}_{\overrightarrow{\mat{V}}^{'}}$ , then outputs $\mat{E}_{\overrightarrow{\mat{V}}^{'}}$.
+\end{enumerate}
+~~~~~Output $\sk_{\overrightarrow{\mat{V}}^{'}}=\mat{E}_{\overrightarrow{\mat{V}}^{'}}$
+\paragraph{Correctness.} It's easy to verify that $\vec{c}_{\vec{v}_{i}}=\vec{s}^{T}\mat{B}\mat{V}_{i}+\vec{e}^{T}_{0}\mat{R}_{i}\mat{V}_{i}$, so $\vec{c}=\vec{s}^{T}\mat{A}_{\overrightarrow{\mat{V}}}+[\vec{e}^{T}_{0}|\vec{e}^{T}_{0}\mat{R}_{1}\mat{V}_{1}|...|\vec{e}^{T}_{0}\mat{R}_{i}\mat{V}_{i}]$. Then $z=c-\vec{c}\cdot \vec{x}_{\overrightarrow{\mat{V}}}=\lfloor q/2 \rfloor m+\underbrace{e-[\vec{e}^{T}_{0}|\vec{e}^{T}_{0}\mat{R}_{1}\mat{V}_{1}|...|\vec{e}^{T}_{0}\mat{R}_{i}\mat{V}_{i}]\vec{x}_{\overrightarrow{\mat{V}}}}_{\vec{e}}(mod\ q)$. If the norm of the error term $\vec{e}$ is small, our HIPE scheme is correct.
+
+\paragraph{Security.} We omit the security proof of our HIPE scheme, since it's very similar to our basic IPE scheme and ~\cite{LC:AbdDeCMoc12}. We also omit the parameters setting.
+
+
+\section{Fuzzy Identity-based Encryption}
+\leo{haven't read this part carefully yet, but from the exact threshold paragraph you wrote. seems we can do it.}
+In this section, we construct a FIBE scheme from our IPE scheme, we first introduce the definition and the security model of Fuzzy IBE.\\[0.4cm]
+A Fuzzy Identity Based encryption scheme consists of the following four algorithms:
+\begin{description}
+ \item $\fuzzy.\setup(\lambda, \ell)\rightarrow (\pp, \msk)$: The algorithm takes as input the security parameter $\lambda$ and the maximum length of identities $\ell$. It outputs the public parameters $\pp$, and the master secret key $\msk$.
+ \item $\fuzzy.\extract(\msk, \pp, id, k)$: This algorithm takes as input the master key $\msk$, the public parameters $\pp$, an identity $id$ and the threshold  $k\leq \ell$. It outputs a decryption key $\sk_{id}$.
+ \item $\fuzzy.\enc(\pp, m, id^{'}) \rightarrow \ct_{id^{'}}$: The algorithm takes as input: a message bit $m$, an identity $id^{'}$, and the public parameters $\pp$. It outputs the ciphertext $\ct_{id^{'}}$.
+ \item $\fuzzy.\dec(\pp, \ct_{id^{'}}, \sk_{id})\rightarrow m$: This algorithm takes as input the ciphertext $\ct_{id^{'}}$, the decryption key $\sk_{id}$ and the public parameters $\pp$. It outputs the message $m$ if $|id \bigcap id^{'}| \geq k$.
+\end{description}
+\paragraph{Security.} We follow the Selective-ID model of security of Fuzzy Identity Based Encryption as given by Sahai and Waters\cite{EC:SahWat05}.
+\begin{itemize}
+ \item \textbf{Target}: The adversary declares the challenge identity, $id^{*}$, and he wishes to be challenged upon.
+ \item \textbf{Setup}: The challenger runs the Setup algorithm of Fuzzy-IBE and gives the public parameters to the adversary.
+ \item \textbf{Phase 1}: The adversary is allowed to issue queries for private keys for identities $id_{j}$ of its choice, as long as $|id_{j} \bigcap id^{*}|< k; \forall j$
+ \item \textbf{Challenge}: The adversary submits a message to encrypt. the challenger encrypts the message with the challenge $id^{*}$ and then flips a random coin $r$. If $r=1$, the ciphertext is given to the adversary, otherwise a random element of the ciphertext space is returned.
+ \item \textbf{Phase 2}: Phase 1 is repeated.
+ \item \textbf{Guess}: the adversary outputs a guess $r^{'}$ of $r$. the advantage of an adversary A in this game is defined as $|Pr[r^{'}=r]-1/2|$.
+\end{itemize}
+
+A Fuzzy Identity Based Encryption scheme is secure in the Selective-Set model of security if all polynomial time adversaries have at most a negligible advantage in the Selective-Set game.\\[0.4cm]
+We introduce the embedding of exact threshold by Katz, Sahai, and Waters\cite{EC:KatSahWat08}.
+\paragraph{Exact threshold}: For binary vector $\vec{x} \in \{0,1\}^{N}$, $H_{w}(\vec{x}$ denotes the Hamming weight of $\vec{x}$. For binary vectors $\vec{a}, \vec{x} \in \{0,1\}^{n}$, the exact threshold predicate is denoted by $\mathcal{P}^{th}_{=t}(\vec{a}, \vec{x})$ and output 1 if and only if $H_{w}(\vec{a} \& \vec{x})=t$, where $\&$ denotes the logical conjunction. Suppose that $t<q$. Set $\mu=N+1$, $\vec{v}=(\vec{a}, 1) \in \Z^{\mu}_{q}$, and $\vec{w}=(\vec{x}, -t) \in \Z^{\mu}_{q}$. We have that $\langle \vec{v}, \vec{w} \rangle =0 $ if and only if $H_{w}(\vec{a} \& \vec{x})=t$.
+
+\subsection{Our FIBE scheme}
+Now, we use our basic IPE scheme to construct a FIBE scheme. Let $\{0,1\}^{N}$ be a space of identities. The threshold predicate over $\{0,1\}^{N}$ is defined by $\mathcal{P}^{th}_{\geq t}(\vec{a}, \vec{x})$ and output 1 if and only if $H_{w}(\vec{a} \& \vec{x}) \geq t$.\
+
+It's easy to see that the above predicate can be written as $\bigcup^{N}_{i=t}\mathcal{P}^{th}_{i=t}(\vec{a}, \vec{x})$. Hence, we can implement a FIBE scheme in a lazy way by repeating ciphertexts of an IPE scheme that supports the relations $\mathcal{P}^{th}_{\geq t}$ for $i=t,...,N$.\\[0.4cm]
+$\fuzzy.\setup(1^{\lambda}, 1^{N})$: On input a security parameter $\lambda$, and identity size $N$, do:
+\begin{enumerate}
+\item $(\textbf{A}, \mat{T}_\mat{A})\leftarrow \trapgen(1^{\lambda}, q, n, m)$.
+\item Chose a random matrix $\mat{B}\xleftarrow{\$} \Z^{n \times m}_{q}$ and a random vector $\vec{u}\xleftarrow{\$} \Z^{n}_{q}$.
+\end{enumerate}
+~~~~~Output $\pp=(\textbf{A}, \textbf{B}, \vec{u})$ and $\msk= \mat{T}_\mat{A}$.\\[0.4cm]
+$\fuzzy.\extract(\pp, \msk, id, t)$: On input public parameters $\pp$, a master key $\msk$, an identity $id= (a_{1},...,a_{N}) \in \{0,1\}^{N}$ and threshold $t \leq N$, do:
+\begin{enumerate}
+\item Set vector $\vec{v}=(a_{1},...,a_{N},1) \in \Z^{\mu}_{q}$.
+\item Define the matrix
+\begin{equation}
+ \mat{V}^{'}= \begin{bmatrix}
+a_{1} \mat{I}_{n}\\
+a_{2} \mat{I}_{n}\\
+\vdots\\
+a_{N} \mat{I}_{n}\\
+\mat{I}_{n}
+\end{bmatrix} \in \Z^{\mu n \times n}_{q},~~~ \mat{V}=\G^{-1}_{\mu n,\ell^{'},m}(\mat{V}^{'}_{i}\cdot \G_{n,2,m}) \in [\ell^{'}]^{m \times m}.
+\end{equation}
+\item Define the  matrix $\mat{U}=\mat{BV} \in \Z^{n \times m}_{q}$, $\mat{A}_{id}=[\mat{A}|\mat{U}]$.
+\item Using the master secret key $\msk=(\mat{T}_\mat{A},\sigma)$, compute $\vec{r}\leftarrow$ $\sampleleft$ ($\mat{A}, \mat{T}_\mat{A},\mat{U}, \vec{u},\sigma$). Then $\vec{r}$ is a vector in $\Z^{2m}$ satisfying $\mat{A}_{id}\cdot \vec{r}=\vec{u}$ (mod $q$).
+\end{enumerate}
+~~Output the secret key $\sk_{id}=\vec{r}$.\\[0.4cm]
+$\fuzzy.\enc(\pp, id^{'}, m)$: On input public parameters $\pp$, an identity $id^{'}=(x_{1},...,x_{N}) \in \{0,1\}^{N}$, and a message $m \in \{0,1\}$, do:
+\begin{enumerate}
+\item Define a sequence of vectors $\vec{w}_{i}=(x_{1},...,x_{N},-t-i+1) \in \Z^{\mu n \times n}_{q}, i=1,...,N-t+1$.
+\item Choose a uniformly random $\vec{s}\xleftarrow{\$} \Z^{n}_{q}$.
+\item Choose a noise vector $\vec{e}_{0}\leftarrow D_{\Z^{m}_{q},\alpha}$ and a noise term $e\leftarrow D_{\Z_{q},\alpha}$.
+\item Compute $\vec{c}_{0}=\vec{s}^{T}\mat{A}+\vec{e}^{T}_{0}$.
+\item For all $i \in [N-t+1]$ Define the matrix
+\begin{equation}
+\mat{W}^{'}_{i}= \begin{bmatrix}
+x_{1} \mat{I}_{n}&x_{2} \mat{I}_{n}&\ldots&x_{N} \mat{I}_{n}& -(t+i-1)\mat{I}_{n}
+\end{bmatrix} \in \Z^{n \times \mu n}_{q},~~~ \mat{W}_{i}=\mat{W}^{'}_{i}\cdot \G_{\mu n,\ell^{'},m} \in \Z^{n \times m}_{q}.
+\end{equation}
+Pick a sequence of random matrices $\mat{R}_{i}\xleftarrow{\$} \{-1,1\}^{m \times m}, i=1,...,N-t+1$, define error vectors $\vec{e}^{T}_{i}=\vec{e}^{T}_{0}\mat{R}_{i}$. Set
+\begin{equation}
+\vec{c}_{i}=\vec{s}^{T}(\mat{B}+\mat{W}_{i})+\vec{e}^{T}_{i},~~~c=\vec{s}^{T}\vec{u}+e+\lfloor \frac{q}{2} \rfloor m.
+\end{equation}
+\end{enumerate}
+~~Output ciphertext  $\ct_{id^{'}}=(\vec{c}_{0},\{\vec{c}_{i}\},c)$.\\[0.4cm]
+$\fuzzy.\dec(\pp, \sk_{id}, \ct_{id^{'}})$: On input public parameters $\pp$, a decryption key $\sk_{id}$, and a ciphertext $\ct_{id^{'}}$, do:
+\begin{enumerate}
+\item Let $H_{w}(id \& id^{'})$ denotes Hamming weight of the logical conjunction of $id$ and $id^{'}$. If $H_{w}(id \& id^{'})=k<t$, output $\perp$. Otherwise, we parse the $\ct_{id^{'}}=(\vec{c}_{0},\{\vec{c}_{i}\},c)$, and compute the matrix $\mat{V}$ for $id$ as above.
+\item Compute $\tilde{\vec{c}}_{k-t+1}=\vec{c}_{k-t+1}\cdot \mat{V}$, let $\vec{c}=[\vec{c}_{0}|\tilde{\vec{c}}_{k-t+1}]$.
+\item Compute $z=c-\vec{c}\cdot \vec{r}$ (mod $q$).
+\end{enumerate}
+~~Output $0$ if $|z|< q/4$ and 1 otherwise.
+\paragraph{Correctness.} We just consider the case $H_{w}(id \& id^{'})=k\geq t$. $\tilde{\vec{c}}_{k-t+1}=\vec{c}_{k-t+1}\cdot \mat{V}=\vec{s}^{T}\mat{B}\mat{V}+\vec{s}^{T}\mat{W}_{k-t+1}\mat{V}+\vec{e}^{T}_{k-t+1}\mat{V}$. It's easy to see that if $H_{w}(id \& id^{'})=k$, $\mat{W}_{k-t+1}\mat{V}=\mat{0}$, so $\tilde{\vec{c}}_{k-t+1}=\vec{s}^{T}\mat{B}\mat{V}+\vec{e}^{T}_{k-t+1}\mat{V}$. Then $\vec{c}=\vec{s}^{T}\mat{A}_{id}+[\vec{e}^{T}_{0}|\vec{e}^{T}_{k-t+1}\mat{V}]$, and $z=c-\vec{c}\cdot \vec{r}$(mod $q$)$=\lfloor q/2 \rfloor m+\underbrace{e-[\vec{e}^{T}_{0}|\vec{e}^{T}_{k-t+1}\mat{V}]\vec{r}}_{\vec{e}}(mod\ q)$. If the error term $\vec{e}$ is small, our scheme is correct.
+\paragraph{Security.} We sketch the proof of the Selective-ID security of the FIBE scheme described above. We have the following theorem:
+\begin{theorem}
+The FIBE scheme above is selectively secure provided that decision-$\LWE_{n,q,\chi}$ assumption holds.
+\end{theorem}
+\noindent $\mat{Proof}$(sketch). We propose a sequence of games where the first game is identical to the real security game from the definition. In the last game in the sequence the adversary has advantage zero. We show that a $\ppt$ adversary $\A$ cannot distinguish between the games which will prove that the adversary has negligible advantage in winning the security game. The LWE problem is used in proving that $\mat{Game\ 3}$ and $\mat{Game\ 4}$ are indistinguishable.\\[0.2cm]
+$\mat{Game\ 0}$. It's identical to the real game.\\[0.2cm]
+$\mat{Game\ 1}$. We slightly change the way that the challenger generates $\pp$. Let $id^{*}=(x^{*}_{1},...,x^{*}_{N})$ be the challenge identity. The challenger chooses a random matrix $\mat{A} \in \Z^{n \times m}_{q}$, a random vector $\vec{u} \in \Z^{n}$, and chooses $\textbf{R}^{*}\in \{-1,1\}^{m \times m}$. Define the matrix
+\begin{equation}
+\mat{W}^{'}= \begin{bmatrix}
+x^{*}_{1} \mat{I}_{n}&x^{*}_{2} \mat{I}_{n}&\ldots&x^{*}_{N} \mat{I}_{n}&-t \mat{I}_{n}
+\end{bmatrix} \in \Z^{n \times \mu n}_{q},
+\end{equation}
+and set $\mat{B}=\mat{A}\mat{R}^{*}-\mat{W}^{'}\cdot \G_{\mu n,\ell^{'},m} \in \Z^{n \times m}_{q}$. Outputs $\pp=(\mat{A}, \mat{B}, \vec{u})$, and sends $\pp$ to $\A$.\\[0.2cm]
+\textbf{Game 2}. We change the way that the challenger answer the key queries. If the adversary $\A$ submits the key query for $id=(a_{1},...,a_{N})$, challenger first checks $H_{w}(id \& id^{'})<t$, if so, define the matrix
+\begin{equation}
+\mat{V}^{'}= \begin{bmatrix}
+a_{1} \mat{I}_{n}\\
+a_{2} \mat{I}_{n}\\
+\vdots\\
+a_{N} \mat{I}_{n}\\
+\mat{I}_{n}
+\end{bmatrix} \in \Z^{\mu n \times n}_{q},~~ \mat{V}=\G^{-1}_{\mu n,\ell^{'},m}(\mat{V}^{'}\cdot \G_{n,2,m}).
+\end{equation}
+Set $\mat{U}=\mat{BV}, \mat{A}_{id}=[\mat{A}|\mat{U}]=[\mat{A}|\mat{A}\mat{R}^{*}\mat{V}-\mat{W}^{'}\mat{V}^{'}\G_{n,2,m}]$.\
+
+Let $\vec{r}\leftarrow$ $\sampleright$ $(\mat{A},\mat{R}^{*}\mat{V},\mat{W}^{'}\mat{V}^{'}, \mat{T}_{\G_{n,2,m}}, \vec{u}, \sigma)$, so that $\mat{A}_{id}\cdot \vec{r}=\vec{u}$. Outputs $\sk_{id}=\vec{r}$, and sends it to $\A$. Otherwise, outputs $\perp$, and aborts the game.\\[0.2cm]
+$\mat{Game\ 3}$. Change the way to generate the challenge ciphertext. We use $\mat{R}^{*}$ as the matrix $\mat{R}_{1}$ used to generate $\vec{c}_{1}$, the remainder of the game is identical to $\mat{Game\ 2}$.\\[0.2cm]
+$\mat{Game\ 4}$. We just choose the challenge ciphertext as a random independent element from the ciphertext space. So the advantage of $\A$ is zero.\\[0.2cm]
+It easy to see in $\mat{Game\ 3}$, $\vec{c}_{0}=\vec{s}^{T}\mat{A}+\vec{e}^{T}_{0}$, $\vec{c}_{1}=(\vec{s}^{T}\mat{A}+\vec{e}^{T}_{0})\mat{R}^{*}$. $c=\vec{s}^{T}\vec{u}+e+\lfloor q/2\rfloor m$, $\vec{c}_{i}=(\vec{s}^{T}\mat{A}+\vec{e}^{T}_{0})\mat{R}^{*}+\vec{s}^{T}[\vec{0},...,\vec{0},-(i-1)\mat{I}_{n}]\cdot \G_{\mu n,\ell^{'},m}+\vec{e}^{T}_{i}-\vec{e}^{T}_{0}\mat{R}^{*}, i=2,...,N-t+1$. If $\vec{s}^{T}\mat{A}+\vec{e}^{T}_{0}$ and $\vec{s}^{T}\vec{u}+e$ are LWE instances, Then it simulates $\mat{Game\ 3}$, if they are random variables, it simulates $\mat{Game\ 4}$. \qed
+
+
+\end{appendix}
+
+
+\end{document}
+
+
+
